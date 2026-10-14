@@ -1,0 +1,339 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>
+<title>Interro blanche calcul littéral</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap">
+<style>
+/* Layout : copie d'interro — barre de mode, deux colonnes de cadres (comme la feuille), une étape par ligne vérifiée, note finale */
+:root{
+  --paper:#f4f6fb; --surface:#ffffff; --grid:#e3e9f4; --margin:#eeb3ae;
+  --ink:#1b2a4a; --muted:#5a6785; --line:#cfd8e8;
+  --cf:#cf3426; --cf-soft:#fde6e2; --rest:#2556cf; --rest-soft:#e5ecfd;
+  --ok:#1b8553; --ok-soft:#e0f3e8; --warn:#9a6208; --warn-soft:#fbf0d9;
+  --display:'Bricolage Grotesque','Atkinson Hyperlegible',system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --math:'STIX Two Text','Cambria Math','Times New Roman',serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1522; --surface:#161f31; --grid:#1f2a40; --margin:#5e3134;
+  --ink:#e7ecf6; --muted:#9ba8c2; --line:#2c3a56;
+  --cf:#ff7b6c; --cf-soft:#3b1f24; --rest:#8aaaff; --rest-soft:#1c2a4c;
+  --ok:#52cc8f; --ok-soft:#14321f; --warn:#f0b65a; --warn-soft:#33270f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1522; --surface:#161f31; --grid:#1f2a40; --margin:#5e3134;
+  --ink:#e7ecf6; --muted:#9ba8c2; --line:#2c3a56;
+  --cf:#ff7b6c; --cf-soft:#3b1f24; --rest:#8aaaff; --rest-soft:#1c2a4c;
+  --ok:#52cc8f; --ok-soft:#14321f; --warn:#f0b65a; --warn-soft:#33270f; color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--cf);margin:0}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1;letter-spacing:-.015em;margin:.15em 0 .25em;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:68ch}
+.m{font-family:var(--math)}
+i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.78em;line-height:1.05;margin:0 .08em}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .12em}
+.hl{color:var(--cf);background:var(--cf-soft);font-weight:600;border-radius:.2em;padding:0 .1em}
+.bk{font-size:1.15em;line-height:1}
+.top{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.levels{display:flex;flex-wrap:wrap;gap:6px}
+.lv{font:inherit;font-size:.92rem;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer}
+.lv[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.score{display:flex;gap:18px;font-size:.85rem;color:var(--muted)}
+.score div{display:flex;flex-direction:column;align-items:flex-end}
+.score strong{font-family:var(--display);font-size:1.5rem;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.score .hot strong{color:var(--cf)}
+.card{position:relative;background-color:var(--surface);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.card::before{content:"";position:absolute;top:0;bottom:0;left:38px;width:2px;background:var(--margin)}
+.card-in{position:relative;padding:20px 22px 24px 60px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.lab{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.btn{font:inherit;font-weight:700;border-radius:6px;padding:10px 16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--muted)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn.sm{padding:7px 12px;font-size:.92rem}
+.btn:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:3px solid var(--rest);outline-offset:2px}
+input.math,textarea.math{font-family:var(--math);font-size:1.2rem;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);min-width:0;box-sizing:border-box}
+input.math:focus,textarea.math:focus{border-color:var(--rest);outline:none;box-shadow:0 0 0 3px var(--rest-soft)}
+.keys{display:flex;flex-wrap:wrap;gap:6px}
+.key{font-family:var(--math);font-size:1.05rem;min-width:40px;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);cursor:pointer}
+.preview{font-family:var(--math);font-size:1.2rem;min-height:1.6em;color:var(--muted)}
+.preview .lbl{font-family:var(--body);font-size:.8rem;margin-right:8px;letter-spacing:.04em}
+.fb{border-radius:6px;padding:10px 14px;border-left:4px solid}
+.fb .m{font-size:1.08em}
+.fb.ok{background:var(--ok-soft);border-color:var(--ok)}
+.fb.warn{background:var(--warn-soft);border-color:var(--warn)}
+.fb.no{background:var(--cf-soft);border-color:var(--cf)}
+.panel{background:var(--surface);border:1px dashed var(--line);border-radius:6px;padding:14px 18px}
+.panel h3{margin:0 0 8px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sol{display:grid;grid-template-columns:auto auto;justify-content:start;column-gap:.35em;row-gap:.45em;font-family:var(--math);font-size:clamp(17px,2.6vw,22px);white-space:nowrap;overflow-x:auto;align-items:baseline}
+.sol .pre{text-align:right;color:var(--muted)}
+.final{display:inline-block;box-shadow:0 0 0 2px var(--ok);border-radius:.2em;padding:0 .3em;background:var(--ok-soft)}
+.note{font-size:.95rem;color:var(--muted);margin:8px 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.actions .spacer{flex:1}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:1120px}
+.sec{font-weight:700;margin:6px 0 -6px;font-size:1.05rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.qbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.qhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.qexpr{font-family:var(--math);font-size:clamp(18px,2.4vw,22px);white-space:nowrap;overflow-x:auto;min-width:0;padding:2px 0}
+.qexpr b{font-style:italic;font-weight:400}
+.ptbox{font-family:var(--math);font-size:1.1rem;border:1.5px solid var(--ink);padding:2px 10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ptbox.full{border-color:var(--ok);color:var(--ok)}
+.ptbox.part{border-color:var(--warn);color:var(--warn)}
+.ptbox.zero{border-color:var(--cf);color:var(--cf)}
+textarea.math{width:100%;resize:vertical;font-size:1.1rem;line-height:1.6}
+.lines{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;font-family:var(--math);font-size:1.12rem}
+.lines li{display:flex;gap:10px;align-items:baseline;overflow-x:auto;white-space:nowrap}
+.lines .ic{font-family:var(--body);font-weight:700;width:1.2em;flex:none;text-align:center;font-size:.95rem}
+.lines .y .ic{color:var(--ok)} .lines .n .ic{color:var(--cf)} .lines .u .ic{color:var(--muted)}
+.lines .n{color:var(--cf)}
+.qact{display:flex;flex-wrap:wrap;gap:8px}
+.qbox .panel{padding:10px 14px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--paper);padding-block:8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-bottom:1px solid var(--line)}
+.chrono{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+.result{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;background:var(--surface);border:2px solid var(--ink);border-radius:6px;padding:14px 18px}
+.result .big{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.tip{font-size:.92rem;color:var(--muted);margin:0}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Calcul littéral · Préparer l'interro</p>
+    <h1>Interro blanche calcul littéral</h1>
+    <p class="lede">Six expressions du même type que l'interro, renouvelées à chaque série. Écris tes calculs <b>une étape par ligne</b> : chaque ligne est comparée à l'expression de départ, ce qui permet de voir où une erreur s'est glissée.</p>
+  </header>
+
+  <div class="bar">
+    <div class="levels" id="modes" role="group" aria-label="Mode">
+      <button class="lv" data-m="train" aria-pressed="true">Entraînement</button>
+      <button class="lv" data-m="exam" aria-pressed="false">Interro blanche</button>
+    </div>
+    <span class="chrono" id="chrono" hidden>00:00</span>
+    <span style="flex:1"></span>
+    <button class="btn primary" id="submit" hidden>Rendre ma copie</button>
+    <button class="btn" id="newSet">Nouvelle série</button>
+  </div>
+  <p class="tip">Écriture : <span class="m">x^2</span> ou <span class="m"><i>x</i>²</span> pour le carré, <span class="m">1/3x</span> pour <span class="m"><span class="frac"><span>1</span><span>3</span></span><i>x</i></span>, le signe × peut être omis. Tu peux commencer une ligne par « = ».</p>
+
+  <div id="result"></div>
+  <p class="sec">Développer et réduire les expressions suivantes :</p>
+  <div class="grid" id="g1"></div>
+  <p class="sec">Factoriser les expressions suivantes :</p>
+  <div class="grid" id="g2"></div>
+</div>
+
+<script>
+/* ===== Outils communs : fractions, polynômes, lecture des réponses ===== */
+const $ = s => document.querySelector(s);
+const escS = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const ri = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const sgn = () => pick([1,-1]);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b,a%b]; } return a; }
+
+/* fractions */
+function F(n,d=1){ if(d===0) throw new Error('div0'); if(d<0){n=-n;d=-d;} const k=gcd(n,d)||1; return {n:n/k,d:d/k}; }
+const F0=F(0), F1=F(1);
+const Fa=(a,b)=>F(a.n*b.d+b.n*a.d,a.d*b.d), Fm=(a,b)=>F(a.n*b.n,a.d*b.d), Finv=a=>F(a.d,a.n);
+const Fz=a=>a.n===0, Feq=(a,b)=>a.n===b.n&&a.d===b.d;
+const fstr=a=>a.d===1?String(a.n):(a.n<0?'-':'')+Math.abs(a.n)+'/'+a.d;
+
+/* polynômes : tableau de fractions, indice = degré */
+function pn(p){ p=p.slice(); while(p.length>1&&Fz(p[p.length-1])) p.pop(); if(!p.length) p=[F0]; return p; }
+const P=(...v)=>pn(v.map(x=>typeof x==='object'?x:F(x)));
+const Q={
+  add(a,b){ const r=[]; for(let i=0;i<Math.max(a.length,b.length);i++) r[i]=Fa(a[i]||F0,b[i]||F0); return pn(r); },
+  mul(a,b){ const r=Array.from({length:a.length+b.length-1},()=>F0); a.forEach((x,i)=>b.forEach((y,j)=>{ r[i+j]=Fa(r[i+j],Fm(x,y)); })); return pn(r); },
+  sc(a,k){ return pn(a.map(x=>Fm(x,typeof k==='object'?k:F(k)))); },
+  neg(a){ return Q.sc(a,-1); }, sub(a,b){ return Q.add(a,Q.neg(b)); }
+};
+const peq=(a,b)=>{ a=pn(a); b=pn(b); return a.length===b.length&&a.every((v,i)=>Feq(v,b[i])); };
+const nzc=p=>p.filter(v=>!Fz(v)).length;
+const deg=p=>pn(p).length-1;
+function monoStr(a,d){ const ab=F(Math.abs(a.n),a.d), one=ab.n===1&&ab.d===1; return ((one&&d>0)?'':fstr(ab))+(d===0?'':d===1?'x':'x^'+d); }
+function termsS(L){ if(!L.length) return '0'; return L.map((m,i)=>{ const neg=m.a.n<0, s=monoStr(m.a,m.d); return i===0?(neg?'-':'')+s:(neg?' - ':' + ')+s; }).join(''); }
+const monosOf=(p,k=1)=>{ const L=[]; for(let d=p.length-1;d>=0;d--) if(p[d]&&!Fz(p[d])) L.push({a:Fm(p[d],F(k)),d}); return L; };
+const polyS=p=>termsS(monosOf(pn(p)));
+const monoS=(a,d)=>termsS([{a:typeof a==='object'?a:F(a),d}]);
+const fS=p=>nzc(p)>=2?'('+polyS(p)+')':polyS(p);
+
+/* affichage : chaîne ASCII → HTML mathématique */
+function fm(s){ let o='',i=0; while(i<s.length){ const ch=s[i];
+  if(/\d/.test(ch)){ let j=i; while(j<s.length&&/\d/.test(s[j])) j++; const a=s.slice(i,j);
+    if(s[j]==='/'&&/\d/.test(s[j+1]||'')){ let k=j+1; while(k<s.length&&/\d/.test(s[k])) k++; o+=`<span class="frac"><span>${a}</span><span>${s.slice(j+1,k)}</span></span>`; i=k; continue; }
+    o+=a; i=j; continue; }
+  if(ch==='{'){ o+='<span class="hl">'; i++; continue; }
+  if(ch==='}'){ o+='</span>'; i++; continue; }
+  if(ch==='^'){ let j=i+1,d=''; while(j<s.length&&/\d/.test(s[j])) d+=s[j++]; o+='<sup>'+d+'</sup>'; i=j; continue; }
+  if(ch==='-'){ o+='−'; i++; continue; }
+  if(ch==='*'){ o+='×'; i++; continue; }
+  if(ch==='x'){ o+='<i>x</i>'; i++; continue; }
+  if(ch==='['||ch===']'){ o+='<span class="bk">'+ch+'</span>'; i++; continue; }
+  o+=escS(ch); i++; }
+  return o; }
+const tx=s=>s.replace(/`([^`]+)`/g,(_,m)=>'<span class="m">'+fm(m)+'</span>');
+const M=s=>'<span class="m">'+fm(s)+'</span>';
+const pts=x=>String(x).replace('.',',');
+
+/* lecture de ce que tape l'élève */
+function tokenize(s){ s=s.replace(/[−–—]/g,'-').replace(/[×·∙•]/g,'*').replace(/÷/g,'/').replace(/²/g,'^2').replace(/³/g,'^3').replace(/X/g,'x');
+  const t=[]; let i=0; while(i<s.length){ const c=s[i]; if(/\s/.test(c)){ i++; continue; }
+    if(/\d/.test(c)){ let j=i; while(j<s.length&&/\d/.test(s[j])) j++; let v=F(parseInt(s.slice(i,j),10));
+      if((s[j]==='.'||s[j]===',')&&/\d/.test(s[j+1]||'')){ let k=j+1; while(k<s.length&&/\d/.test(s[k])) k++; const dec=s.slice(j+1,k); v=F(parseInt(s.slice(i,j)+dec,10),10**dec.length); j=k; }
+      t.push({k:'n',v}); i=j; continue; }
+    if('x+-*/^()[]'.includes(c)){ t.push({k:c}); i++; continue; }
+    throw new Error('char'); }
+  return t; }
+function parse(s){ const T=tokenize(s); let p=0; const pk=()=>T[p]&&T[p].k;
+  const eat=k=>{ if(pk()!==k) throw new Error('expect'); return T[p++]; };
+  function sum(){ const terms=[]; let sg='+'; if(pk()==='+'||pk()==='-') sg=T[p++].k; terms.push({s:sg,n:prod()});
+    while(pk()==='+'||pk()==='-'){ const g=T[p++].k; terms.push({s:g,n:prod()}); }
+    return terms.length===1&&terms[0].s==='+'?terms[0].n:{t:'sum',terms}; }
+  function prod(){ const fs=[pw()]; for(;;){ const k=pk();
+      if(k==='*'){ p++; fs.push(pw()); } else if(k==='/'){ p++; fs.push({t:'inv',e:pw()}); }
+      else if(['n','x','(','['].includes(k)) fs.push(pw()); else break; }
+    return fs.length===1?fs[0]:{t:'prod',fs}; }
+  function pw(){ let b=base(); while(pk()==='^'){ p++; const v=eat('n').v; if(v.d!==1||v.n>9) throw new Error('pow'); b={t:'pow',b,e:v.n}; } return b; }
+  function base(){ const k=pk(); if(k==='n') return {t:'num',v:T[p++].v}; if(k==='x'){ p++; return {t:'x'}; }
+    if(k==='('||k==='['){ p++; const e=sum(); eat(k==='('?')':']'); return {t:'grp',e,br:k}; }
+    if(k==='-'){ p++; return {t:'neg',e:pw()}; } throw new Error('base'); }
+  if(!T.length) throw new Error('empty'); const r=sum(); if(p!==T.length) throw new Error('trail'); ev(r); return r; }
+function ev(n){ switch(n.t){
+  case'num': return [n.v]; case'x': return [F0,F1]; case'neg': return Q.neg(ev(n.e)); case'grp': return ev(n.e);
+  case'pow':{ let r=[F1]; const b=ev(n.b); for(let i=0;i<n.e;i++) r=Q.mul(r,b); return r; }
+  case'inv':{ const c=ev(n.e); if(c.length!==1||Fz(c[0])) throw new Error('inv'); return [Finv(c[0])]; }
+  case'prod': return n.fs.reduce((r,f)=>Q.mul(r,ev(f)),[F1]);
+  case'sum': return n.terms.reduce((r,t)=>Q.add(r,t.s==='-'?Q.neg(ev(t.n)):ev(t.n)),[F0]); } }
+function h(n){ switch(n.t){
+  case'num': return n.v.d===1?String(n.v.n):`<span class="frac"><span>${n.v.n}</span><span>${n.v.d}</span></span>`;
+  case'x': return '<i>x</i>'; case'neg': return '−'+h(n.e);
+  case'pow': return h(n.b)+'<sup>'+n.e+'</sup>';
+  case'grp': return (n.br==='['?'<span class="bk">[</span>':'(')+h(n.e)+(n.br==='['?'<span class="bk">]</span>':')');
+  case'inv': return '/'+h(n.e);
+  case'prod':{ const out=[]; n.fs.forEach(f=>{ if(f.t==='inv'&&out.length){ const a=out.pop(); out.push({h:`<span class="frac"><span>${a.h}</span><span>${h(f.e)}</span></span>`,t:'frac'}); } else out.push({h:h(f),t:f.t}); });
+    return out.map((o,i)=>i===0?o.h:((o.t==='num'||o.t==='neg'||o.t==='frac')?' × ':'')+o.h).join(''); }
+  case'sum': return n.terms.map((t,i)=>(i===0?(t.s==='-'?'−':''):(t.s==='-'?' − ':' + '))+h(t.n)).join(''); } }
+
+/* forme de la réponse */
+const hasX=n=>n.t==='x'||(n.t==='neg'||n.t==='grp'||n.t==='inv')&&hasX(n.e)||n.t==='pow'&&hasX(n.b)||n.t==='prod'&&n.fs.some(hasX)||n.t==='sum'&&n.terms.some(t=>hasX(t.n));
+function hasVarSum(n){ if(n.t==='sum') return hasX(n); if(n.t==='grp'||n.t==='neg'||n.t==='inv') return hasVarSum(n.e); if(n.t==='pow') return hasVarSum(n.b); if(n.t==='prod') return n.fs.some(hasVarSum); return false; }
+const topTerms=a=>a.t==='sum'?a.terms.map(t=>t.n):[a];
+const isMono=n=>!hasVarSum(n)&&nzc(ev(n))<=1;
+function isReducedSum(a){ const ts=topTerms(a); if(!ts.every(t=>isMono(t)&&nzc(ev(t))===1)) return false; const ds=ts.map(t=>deg(ev(t))); return new Set(ds).size===ds.length; }
+function factorsOf(a){ let n=a; for(;;){ if(n.t==='sum'&&n.terms.length===1){ n=n.terms[0].n; continue; } if(n.t==='neg'){ n=n.e; continue; } break; }
+  if(n.t==='prod') return n.fs.map(f=>f.t==='neg'?f.e:f); if(n.t==='pow'&&deg(ev(n.b))>=1) return [n]; return null; }
+function isFactored(a){ const fs=factorsOf(a); if(!fs) return 'sum';
+  const nonc=fs.reduce((s,f)=>s+(f.t==='inv'?0:f.t==='pow'&&deg(ev(f.b))>=1?f.e:deg(ev(f))>=1?1:0),0);
+  if(nonc<2) return 'sum';
+  for(const f of fs){ const b=f.t==='pow'?f.b:f; if(b.t==='grp'&&nzc(ev(b.e))>=2&&!isReducedSum(b.e)) return 'unred'; }
+  return 'ok'; }
+
+/* clavier d'aide : insère dans le champ ciblé */
+function insertAt(el,v){ if(!el||el.disabled) return; const s=el.selectionStart??el.value.length, e=el.selectionEnd??el.value.length;
+  if(v==='²'&&!/[x)]$/.test(el.value.slice(0,s))) v='x²';
+  el.value=el.value.slice(0,s)+v+el.value.slice(e); el.focus(); el.setSelectionRange(s+v.length,s+v.length); el.dispatchEvent(new Event('input',{bubbles:true})); }
+function keyRow(keys,getTarget){ const d=document.createElement('div'); d.className='keys';
+  keys.forEach(([v,lab])=>{ const b=document.createElement('button'); b.type='button'; b.className='key'; b.innerHTML=lab;
+    b.addEventListener('mousedown',e=>e.preventDefault()); b.onclick=()=>insertAt(getTarget(),v); d.appendChild(b); }); return d; }
+
+const LET='ABCDEF';
+function L(...ms){return ms} // helper lisible
+const T=(a,d)=>({a:typeof a==='object'?a:F(a),d});
+function rnd0(a,b){let v;do{v=ri(a,b)}while(v===0);return v}
+
+function genA(){for(;;){const k=pick([2,3,4]),p=rnd0(-5,5),q=pick([1,2,3]),r=rnd0(-6,6),s=rnd0(-6,6),t=ri(1,6),op=pick(['-','+']);
+  const e=`${monoS(k,1)}(${polyS(P(p,1))}) - (${polyS(P(s,r,q))}) ${op} ${t}`;
+  const list=[T(k,2),T(k*p,1),...monosOf(P(s,r,q),-1),T(op==='-'?-t:t,0)];
+  const poly=ev(parse(e));if(nzc(poly)<2)continue;
+  return{kind:'dev',pts:1,e,poly,steps:[termsS(list),polyS(poly)]}}}
+function genB(){for(;;){const n=pick([2,3,4,5]);let num=rnd0(-(n-1),n-1);if(gcd(num,n)!==1)continue;const a=F(num,n),p=rnd0(-7,7),q=rnd0(-7,7),c=pick([1,-1]);let m=rnd0(-9,9);if(gcd(m,n)!==1)continue;
+  const sec=[F(m,n),F(c)];
+  const e=`(${polyS([F(p),a])})(${polyS(P(q,1))}) - (${polyS(sec)})`;
+  const list=[T(a,2),T(Fm(a,F(q)),1),T(p,1),T(p*q,0),...monosOf(pn(sec),-1)];
+  const poly=ev(parse(e));
+  return{kind:'dev',pts:1,e,poly,steps:[termsS(list),polyS(poly)]}}}
+function genC(){for(;;){const a=pick([1,2,3]),b=rnd0(-5,5),c=pick([1,2,3]),d=rnd0(-5,5);if(a===c&&b===d)continue;const op=Math.random()<.8?'-':'+';
+  const s1=P(b*b,2*a*b,a*a),s2=P(d*d,2*c*d,c*c),e=`(${polyS(P(b,a))})^2 ${op} (${polyS(P(d,c))})^2`;const poly=ev(parse(e));if(nzc(poly)<2)continue;
+  const st1=op==='-'?`${polyS(s1)} - (${polyS(s2)})`:`${polyS(s1)} + ${polyS(s2)}`;
+  return{kind:'dev',pts:1.5,e,poly,steps:op==='-'?[st1,termsS([...monosOf(s1),...monosOf(s2,-1)]),polyS(poly)]:[st1,polyS(poly)]}}}
+function genD(){for(;;){const k=ri(2,6),a=ri(1,4),b=ri(1,6);if(a===1&&b===k)continue;const f1=`(${polyS(P(b,a))})`,f2=`(${polyS(P(-b,a))})`;
+  const e=`x^2 - ${k*k} - ${Math.random()<.5?f1+f2:f2+f1}`,pr=P(-b*b,0,a*a),poly=ev(parse(e));if(nzc(poly)<1)continue;
+  return{kind:'dev',pts:1.5,e,poly,steps:[`x^2 - ${k*k} - (${polyS(pr)})`,termsS([T(1,2),T(-k*k,0),...monosOf(pr,-1)]),polyS(poly)]}}}
+function genE(){for(;;){const C=P(rnd0(-9,9),1),P1=P(rnd0(-7,7),pick([1,2,3])),P2=P(rnd0(-7,7),pick([1,1,2,3])),op=pick(['+','-']);
+  if(peq(P1,C)||peq(P2,C)||peq(P1,P2))continue;const R=op==='-'?Q.sub(P1,P2):Q.add(P1,P2);if(R.length<2||Fz(R[1]))continue;
+  const t1=Math.random()<.7?fS(P1)+fS(C):fS(C)+fS(P1),t2=Math.random()<.7?fS(P2)+fS(C):fS(C)+fS(P2);
+  const e=`${t1} ${op} ${t2}`,poly=ev(parse(e)),sC=fS(C);
+  return{kind:'fac',pts:1,e,poly,steps:[`${sC}[${fS(P1)} ${op} ${fS(P2)}]`,`${sC}[${termsS([...monosOf(P1),...monosOf(P2,op==='-'?-1:1)])}]`,`${sC}(${polyS(R)})`]}}}
+function genF(){for(;;){const k=ri(1,6),C=P(k,1),P2=P(rnd0(-7,7),pick([1,2,3])),op=pick(['+','+','-']);if(peq(P2,C))continue;
+  const R=op==='-'?Q.sub(C,P2):Q.add(C,P2);if(R.length<2||Fz(R[1]))continue;const sC=fS(C);
+  const e=`(${k} + x)^2 ${op} ${fS(P2)}${sC}`,poly=ev(parse(e));
+  return{kind:'fac',pts:1,e,poly,note:`Attention : (${k} + <i>x</i>) et (<i>x</i> + ${k}) sont le même facteur.`,
+    steps:[`${sC}${sC} ${op} ${fS(P2)}${sC}`,`${sC}[${sC} ${op} ${fS(P2)}]`,`${sC}[${termsS([...monosOf(C),...monosOf(P2,op==='-'?-1:1)])}]`,`${sC}(${polyS(R)})`]}}}
+const GENS=[genA,genB,genC,genD,genE,genF];
+
+const S={mode:'train',items:[],submitted:false,t0:0,timer:null};
+function newSet(){S.items=GENS.map(g=>g());S.submitted=false;$('#result').innerHTML='';renderAll();
+  clearInterval(S.timer);if(S.mode==='exam'){S.t0=Date.now();tick();S.timer=setInterval(tick,1000)}}
+function tick(){const s=Math.floor((Date.now()-S.t0)/1000);$('#chrono').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+
+function cardHTML(i){const it=S.items[i],train=S.mode==='train';
+  return `<article class="qbox" id="q-${i}">
+    <div class="qhead"><div class="qexpr"><b>${LET[i]}</b> = ${fm(it.e)}</div><span class="ptbox" id="p-${i}">/${pts(it.pts)}</span></div>
+    <textarea class="math" id="t-${i}" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Une étape par ligne"></textarea>
+    <div id="k-${i}"></div>
+    <ol class="lines" id="l-${i}"></ol>
+    <div id="v-${i}"></div>
+    ${train?`<div class="qact"><button class="btn primary sm" data-a="check" data-i="${i}">Vérifier</button><button class="btn sm" data-a="sol" data-i="${i}">Correction</button><button class="btn sm" data-a="new" data-i="${i}">Autre expression</button></div>`:''}
+    <div class="panel" id="c-${i}" hidden></div></article>`}
+function renderAll(){$('#g1').innerHTML=[0,1,2,3].map(cardHTML).join('');$('#g2').innerHTML=[4,5].map(cardHTML).join('');
+  S.items.forEach((_,i)=>{const ta=$('#t-'+i);ta.addEventListener('input',()=>drawLines(i));
+    $('#k-'+i).appendChild(keyRow([['x','<i>x</i>'],['²','<i>x</i>²'],['(','('],[')',')'],['[','['],[']',']'],['/','/'],['−','−']],()=>ta))});
+  $('#submit').hidden=S.mode!=='exam';$('#submit').disabled=false;$('#chrono').hidden=S.mode!=='exam'}
+
+function analyse(i){const it=S.items[i],out=[];
+  $('#t-'+i).value.split('\n').forEach(r=>{let s=r.trim().replace(/^[A-Fa-f]\s*=/,'').replace(/^=/,'').trim();if(!s)return;
+    let ast=null,ok=null;try{ast=parse(s);ok=peq(ev(ast),it.poly)}catch(e){}out.push({s,ast,ok})});return out}
+function drawLines(i){const status=S.mode==='train'||S.submitted,Ls=analyse(i);
+  $('#l-'+i).innerHTML=Ls.map(l=>{const c=!status?'u':l.ast?(l.ok?'y':'n'):'u';const ic=!status?'=':l.ast?(l.ok?'✓':'✗'):'?';
+    return `<li class="${c}"><span class="ic">${ic}</span><span>${l.ast?h(l.ast):escS(l.s)+' <small style="font-family:var(--body);color:var(--muted)">(illisible)</small>'}</span></li>`}).join('')}
+function verdict(i){const it=S.items[i],Ls=analyse(i);if(!Ls.length)return{p:0,c:'no',m:'Aucune réponse.'};
+  const last=Ls[Ls.length-1],bad=Ls.findIndex(l=>l.ok===false);
+  if(!last.ast)return{p:0,c:'no',m:'Je n’arrive pas à lire la dernière ligne.'};
+  if(!last.ok)return{p:0,c:'no',m:`Erreur à partir de la ligne ${bad+1} : elle n’est plus égale à l’expression de départ.`};
+  const slip=bad>=0;
+  if(it.kind==='dev'){if(!isReducedSum(last.ast))return{p:0,c:'warn',m:'C’est égal, mais ce n’est pas encore développé et réduit.'};
+    return slip?{p:it.pts/2,c:'warn',m:`Le résultat est juste, mais la ligne ${bad+1} est fausse : dans une copie, cela coûte des points.`}:{p:it.pts,c:'ok',m:'Juste : développé et réduit.'}}
+  const f=isFactored(last.ast);
+  if(f==='sum')return{p:0,c:'warn',m:'C’est égal, mais ce n’est pas encore un produit.'};
+  if(f==='unred')return{p:it.pts/2,c:'warn',m:'Bien factorisé, mais il faut réduire le contenu du crochet.'};
+  return slip?{p:it.pts/2,c:'warn',m:`Le résultat est juste, mais la ligne ${bad+1} est fausse.`}:{p:it.pts,c:'ok',m:'Juste : c’est bien une forme factorisée.'}}
+function showVerdict(i){const v=verdict(i),it=S.items[i];$('#v-'+i).innerHTML=`<div class="fb ${v.c}">${v.m}</div>`;
+  const b=$('#p-'+i);b.textContent=`${pts(v.p)}/${pts(it.pts)}`;b.className='ptbox '+(v.p===it.pts?'full':v.p>0?'part':'zero');return v}
+function showSol(i){const it=S.items[i],c=$('#c-'+i);c.hidden=false;
+  const rows=[[LET[i]+' =',fm(it.e)],...it.steps.map((s,k)=>['=',k===it.steps.length-1?`<span class="final">${fm(s)}</span>`:fm(s)])];
+  c.innerHTML='<h3>Correction</h3><div class="sol">'+rows.map(r=>`<span class="pre">${r[0]}</span><span>${r[1]}</span>`).join('')+'</div>'+(it.note?`<p class="note">${it.note}</p>`:'')}
+function submit(){S.submitted=true;clearInterval(S.timer);let tot=0;const max=S.items.reduce((s,it)=>s+it.pts,0);
+  S.items.forEach((_,i)=>{drawLines(i);tot+=showVerdict(i).p;showSol(i);$('#t-'+i).disabled=true});
+  $('#submit').disabled=true;
+  $('#result').innerHTML=`<div class="result"><span class="big">${pts(tot)} / ${pts(max)}</span><span>Temps : ${$('#chrono').textContent}. Les lignes marquées ✗ montrent où l’erreur est apparue. La correction est sous chaque expression.</span><button class="btn primary" id="again">Nouvelle interro</button></div>`;
+  $('#again').onclick=newSet;$('#result').scrollIntoView({behavior:'smooth',block:'start'})}
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const i=+b.dataset.i;
+  if(b.dataset.a==='check')showVerdict(i);
+  else if(b.dataset.a==='sol')showSol(i);
+  else{S.items[i]=GENS[i]();const art=$('#q-'+i);art.outerHTML=cardHTML(i);const ta=$('#t-'+i);ta.addEventListener('input',()=>drawLines(i));
+    $('#k-'+i).appendChild(keyRow([['x','<i>x</i>'],['²','<i>x</i>²'],['(','('],[')',')'],['[','['],[']',']'],['/','/'],['−','−']],()=>ta));ta.focus()}});
+document.querySelectorAll('#modes .lv').forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;document.querySelectorAll('#modes .lv').forEach(x=>x.setAttribute('aria-pressed',x===b));newSet()});
+$('#submit').onclick=submit;$('#newSet').onclick=newSet;
+newSet();
+</script>
+</body></html>
