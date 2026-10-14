@@ -115,7 +115,7 @@ input.math:focus,textarea.math:focus{border-color:var(--rest);outline:none;box-s
   <header>
     <p class="eyebrow">Calcul littéral · Préparer l'interro</p>
     <h1>Interro blanche calcul littéral</h1>
-    <p class="lede">Six expressions du même type que l'interro, renouvelées à chaque série : quatre à développer et réduire, deux à factoriser.</p>
+    <p class="lede">Six expressions à développer et réduire, du même type que l'interro, renouvelées à chaque série.</p>
   </header>
 
   <div class="brouillon">
@@ -130,8 +130,6 @@ input.math:focus,textarea.math:focus{border-color:var(--rest);outline:none;box-s
 
   <p class="sec">Développer et réduire les expressions suivantes :</p>
   <div class="grid" id="g1"></div>
-  <p class="sec">Factoriser les expressions suivantes :</p>
-  <div class="grid" id="g2"></div>
 </div>
 
 <script>
@@ -288,25 +286,28 @@ function gD(){for(;;){const k=ri(2,6),a=ri(1,4),b=ri(1,6);if(a===1&&b===k)contin
   if(a>1)c.push([polyS(fromList([...base,T(-a,2),T(b*b,0)])),`(${M(monoS(a,1))})² = ${M(monoS(a*a,2))} : le coefficient aussi est élevé au carré.`]);
   else c.push([polyS(fromList([...base,T(-1,2),T(-2*b,1),T(-b*b,0)])),'(<i>a</i> + <i>b</i>)(<i>a</i> − <i>b</i>) = <i>a</i>² − <i>b</i>² : il n’y a pas de terme en <i>x</i>.']);
   return finish({kind:'dev',e,poly,ans:polyS(poly),steps:[`x^2 - ${k*k} - (${polyS(pr)})`,termsS(L1),polyS(poly)]},c,devPerturb(poly))}}
-/* E : facteur commun */
+/* E : deux produits avec un facteur répété */
+function onlyFirst(p,k){const m=monosOf(p,k);return m.length?[{a:Fm(m[0].a,F(-1)),d:m[0].d},...m.slice(1).map(x=>({a:Fm(x.a,F(-1)),d:x.d}))].map((x,i)=>i===0?x:{a:Fm(x.a,F(-1)),d:x.d}):m}
 function gE(){for(;;){const C=P(rnd0(-9,9),1),P1=P(rnd0(-7,7),pick([1,2,3])),P2=P(rnd0(-7,7),pick([1,1,2,3])),op=pick(['+','-','-']);
-  if(peq(P1,C)||peq(P2,C)||peq(P1,P2))continue;const R=op==='-'?Q.sub(P1,P2):Q.add(P1,P2);if(R.length<2||Fz(R[1]))continue;
-  const sC=fS(C),t1=Math.random()<.7?fS(P1)+sC:sC+fS(P1),t2=Math.random()<.7?fS(P2)+sC:sC+fS(P2),e=`${t1} ${op} ${t2}`,poly=ev(parse(e));
+  if(peq(P1,C)||peq(P2,C)||peq(P1,P2))continue;
+  const sC=fS(C),t1=Math.random()<.7?fS(P1)+sC:sC+fS(P1),t2=Math.random()<.7?fS(P2)+sC:sC+fS(P2),e=`${t1} ${op} ${t2}`,poly=ev(parse(e));if(nzc(poly)<2)continue;
+  const A1=Q.mul(P1,C),A2=Q.mul(P2,C),sg=op==='-'?-1:1,L1=[...monosOf(A1),...monosOf(A2,sg)];
+  const steps=op==='-'?[`${polyS(A1)} - (${polyS(A2)})`,termsS(L1),polyS(poly)]:[`${polyS(A1)} + ${polyS(A2)}`,polyS(poly)];
   const c=[];
-  if(op==='-')c.push([`${sC}(${polyS(Q.add(P1,P(P2[0],Fm(P2[1],F(-1)))))})`,'Le − devant la deuxième parenthèse change <b>tous</b> ses signes.']);
-  c.push([`${sC}(${polyS(op==='-'?Q.add(P1,P2):Q.sub(P1,P2))})`,'Attention au signe entre les deux termes : il se retrouve dans le crochet.']);
-  c.push([`${fS(P(Fm(C[0],F(-1)),1))}(${polyS(R)})`,`Le facteur commun est ${M(sC)} : recopie-le sans changer son signe.`]);
-  return finish({kind:'fac',e,poly,ans:`${sC}(${polyS(R)})`,steps:[`${sC}[${fS(P1)} ${op} ${fS(P2)}]`,`${sC}[${termsS([...monosOf(P1),...monosOf(P2,op==='-'?-1:1)])}]`,`${sC}(${polyS(R)})`]},c,facPerturb(sC,R))}}
+  if(op==='-'){c.push([polyS(fromList([...monosOf(A1),...monosOf(A2).map((x,i)=>i===0?{a:Fm(x.a,F(-1)),d:x.d}:x)])),MINUS_ALL]);c.push([polyS(fromList([...monosOf(A1),...monosOf(A2)])),MINUS_LOST])}
+  const cut=pr=>Q.add(Q.mul([pr[0]],[C[0]]),Q.mul([F0,pr[1]],[F0,C[1]]));
+  c.push([polyS(Q.add(cut(P1),Q.sc(cut(P2),sg))),'Double distributivité : chaque produit donne <b>quatre</b> termes, pas deux.']);
+  return finish({kind:'dev',e,poly,ans:polyS(poly),steps,note:op==='-'?'Développe chaque produit, puis garde le − devant le second résultat mis entre parenthèses.':''},c,devPerturb(poly))}}
 /* F : (k + x)² ± (ax + b)(x + k) */
 function gF(){for(;;){const k=ri(1,6),C=P(k,1),P2=P(rnd0(-7,7),pick([1,2,3])),op=pick(['+','+','-']);if(peq(P2,C))continue;
-  const R=op==='-'?Q.sub(C,P2):Q.add(C,P2);if(R.length<2||Fz(R[1]))continue;const sC=fS(C),e=`(${k} + x)^2 ${op} ${fS(P2)}${sC}`,poly=ev(parse(e));
-  const one=op==='-'?Q.sub(P(1),P2):Q.add(P(1),P2);
-  const c=[[`${sC}(${polyS(one)})`,`(${k} + <i>x</i>)² = ${M(sC+sC)} : après avoir mis ${M(sC)} en facteur, il reste ${M(sC)}, pas 1.`]];
-  if(op==='-')c.push([`${sC}(${polyS(Q.add(C,P(P2[0],Fm(P2[1],F(-1)))))})`,'Le − devant la deuxième parenthèse change <b>tous</b> ses signes.']);
-  c.push([`${sC}(${polyS(op==='-'?Q.add(C,P2):Q.sub(C,P2))})`,'Attention au signe entre les deux termes : il se retrouve dans le crochet.']);
-  return finish({kind:'fac',e,poly,ans:`${sC}(${polyS(R)})`,note:`(${k} + <i>x</i>) et (<i>x</i> + ${k}) sont le même facteur.`,
-    steps:[`${sC}${sC} ${op} ${fS(P2)}${sC}`,`${sC}[${sC} ${op} ${fS(P2)}]`,`${sC}[${termsS([...monosOf(C),...monosOf(P2,op==='-'?-1:1)])}]`,`${sC}(${polyS(R)})`]},c,facPerturb(sC,R))}}
-
+  const e=`(${k} + x)^2 ${op} ${fS(P2)}${fS(C)}`,poly=ev(parse(e));if(nzc(poly)<2)continue;
+  const sq=Q.mul(C,C),pr=Q.mul(P2,C),sg=op==='-'?-1:1,L1=[...monosOf(sq),...monosOf(pr,sg)];
+  const steps=op==='-'?[`${polyS(sq)} - (${polyS(pr)})`,termsS(L1),polyS(poly)]:[`${polyS(sq)} + ${polyS(pr)}`,polyS(poly)];
+  const c=[[polyS(Q.add(P(k*k,0,1),Q.sc(pr,sg))),`(${k} + <i>x</i>)² = ${M(polyS(sq))} : il ne faut pas oublier le double produit.`],
+    [polyS(Q.add(P(k*k,k,1),Q.sc(pr,sg))),`Le double produit vaut 2 × ${k} × <i>x</i> = ${M(monoS(2*k,1))}.`]];
+  if(op==='-')c.push([polyS(fromList([...monosOf(sq),...monosOf(pr).map((x,i)=>i===0?{a:Fm(x.a,F(-1)),d:x.d}:x)])),MINUS_ALL]);
+  else c.push([polyS(Q.add(sq,Q.add(Q.mul([P2[0]],[C[0]]),Q.mul([F0,P2[1]],[F0,C[1]])))),'Double distributivité : le produit donne <b>quatre</b> termes, pas deux.']);
+  return finish({kind:'dev',e,poly,ans:polyS(poly),steps,note:`(${k} + <i>x</i>)² se développe comme (<i>a</i> + <i>b</i>)².`},c,devPerturb(poly))}}
 /* A : guidée pas à pas — (ax + b)² − (cx + d)² */
 function gGuided(){for(;;){const a=pick([1,2,3]),b=rnd0(-5,5),c=pick([1,2,3]),d=rnd0(-5,5);if(a===c&&b===d)continue;
   const B1=P(b,a),B2=P(d,c),s1=Q.mul(B1,B1),s2=Q.mul(B2,B2),e=`${fS(B1)}^2 - ${fS(B2)}^2`,poly=ev(parse(e));if(nzc(poly)<2)continue;
@@ -355,7 +356,7 @@ function showSol(i){const it=S.items[i],c=$('#c-'+i);c.hidden=false;
   const rows=[[`<i>${LET[i]}</i> =`,fm(it.e)],...it.steps.map((s,k)=>['=',k===it.steps.length-1?`<span class="final">${fm(s)}</span>`:fm(s)])];
   c.innerHTML='<h3>Correction</h3><div class="sol">'+rows.map(r=>`<span class="pre">${r[0]}</span><span>${r[1]}</span>`).join('')+'</div>'+(it.note?`<p class="note">${it.note}</p>`:'')}
 function mount(i){if(S.items[i].kind==='guided')renderGuided(i,false)}
-function renderAll(){$('#g1').innerHTML=[0,1,2,3].map(cardHTML).join('');$('#g2').innerHTML=[4,5].map(cardHTML).join('');S.items.forEach((_,i)=>mount(i))}
+function renderAll(){$('#g1').innerHTML=[0,1,2,3,4,5].map(cardHTML).join('');S.items.forEach((_,i)=>mount(i))}
 function newSet(){S.items=GENS.map(g=>g());S.ok=new Set();$('#nOk').textContent=0;renderAll()}
 
 document.addEventListener('click',e=>{
